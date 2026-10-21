@@ -13,14 +13,14 @@
 <body>
     <div id="main">
         <div id="header">
-            <img src="images/pizza-guy-image.jpeg" alt="Pizza Guy">
+            <img src="public/images/pizza-guy.jpeg" alt="Pizza Guy">
             <h1>Welcome to Papa's Pizza!</h1>
             <h2>Serving GRC studets for 50 years! </h2>
             <hr>
             <p>We make the best pizza ever.</p>
-            <a id="contact-button" href="#" role="button">Contact US</a>
-            <form id="pizza-form" action="#" method="get">
+            <a id="contact-button" href="/contact-us" role="button">Contact US</a>
         </div>
+        <form id="pizza-form" action="/submit-order" method="post">
                 <!-- Contact Info -->
                 <fieldset>
                     <legend>Contact Info</legend>
@@ -108,7 +108,7 @@
                  
             
                 <!-- Order Button -->
-                <button type ="submit" id="order-button">Place Order</button>
+                <button type ="submit" id="order-button" >Place Order</button>
             </form>
     </div>
 </body>

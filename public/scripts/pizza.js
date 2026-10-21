@@ -33,6 +33,17 @@ document.getElementById("pizza-form").onsubmit = () => {
             methodSelected = true;
         }
     }
+
+    if (!methodSelected) {
+     document.getElementById("err-method").style.display = "block";
+    isValid = false;
+    } else{
+        document.getElementById("err-method").style.display = "none";
+    }
+    //Do not submit the form if the data is in-valid
+    return isValid;
+
+
     //Validate pizza size
     let size = document.getElementById("size").value;
     if(size == "none"){
@@ -41,14 +52,6 @@ document.getElementById("pizza-form").onsubmit = () => {
     }
 
     
- {
-    document.getElementById("err-method").style.display = "block";
-    isValid = false;
- }
-
-
-    // Do not submit the form if data is in-valid
-    return isValid;
 };
 
 function clearErrors() {
