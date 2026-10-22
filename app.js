@@ -6,7 +6,7 @@ const app = express();
 const PORT = 3000;
 
 
-//create array to store orders
+//create array to store orders- eventually will store in database
 const orders = [];
 
 //enable static file serving 
@@ -38,7 +38,14 @@ app.get('/menu', (req, res) => {
     res.sendFile(`${import.meta.dirname}/views/menu.html`)
 });
 
-//Add a route to process the pizza order
+
+//add an admin route
+app.get('/admin', (req, res) => {
+    res.send(orders);
+});
+
+
+//Add a route to process the pizza order => post = recoeving form data
 app.post('/submit-order', (req, res) => {
 
     //create a JSON object to store order data
