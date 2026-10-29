@@ -17,21 +17,24 @@ app.use(express.static('public')); //grab static files from the public folder =>
 //Access form data through req.body
 app.use(express.urlencoded({ extended: true}));
 
+//Set new engine to EJS
+app.set('view engine', 'ejs');
+
 //defining a default route
 app.get('/', (req, res) => {
    // res.send('Welcome to Poppa\'s Pizza');
-   res.sendFile(`${import.meta.dirname}/views/home.html`); //when user accesses main page it sends the file
+   res.render('home'); //when user accesses main page it sends the file
 });
 
 //Add a contact route to display a contact view page
 app.get('/contact-us', (req, res) => {
-    res.sendFile(`${import.meta.dirname}/views/contact.html`)
+    res.render('contact');
 });
 
 //Add a submission route to display a thank you message
-app.get('/confirm-order', (req, res) => {
-    res.sendFile(`${import.meta.dirname}/views/confirm.html`)
-});
+/*app.get('/confirm-order', (req, res) => {
+    res.render('confirm');
+});*/
 
 //Add a menu route to display menu
 app.get('/menu', (req, res) => {
@@ -41,7 +44,7 @@ app.get('/menu', (req, res) => {
 
 //add an admin route
 app.get('/admin', (req, res) => {
-    res.send(orders);
+    res.render('admin', {orders} );
 });
 
 
@@ -57,7 +60,7 @@ app.post('/submit-order', (req, res) => {
    console.log(orders);
 
    //Display confirmation page
-   res.sendFile(`${import.meta.dirname}/views/confirm.html`)
+   res.render('confirm', { order });
 });
 
 //start server on designated port

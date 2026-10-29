@@ -41,7 +41,7 @@ document.getElementById("pizza-form").onsubmit = () => {
         document.getElementById("err-method").style.display = "none";
     }
     //Do not submit the form if the data is in-valid
-    return isValid;
+    
 
 
     //Validate pizza size
@@ -50,6 +50,8 @@ document.getElementById("pizza-form").onsubmit = () => {
         document.getElementById("err-size").style.display = "block";
         isValid = false;
     }
+
+    return isValid;
 
     
 };
