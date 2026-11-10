@@ -1,6 +1,25 @@
 import express from 'express';
 
+// Import mysql 
+import mysql2 from 'mysql2';
+
+//import .env class-package
+import dotenv from 'dotenv';
+dotenv.config();
+
+ //Create a connection pool (bucket of db connectiom)
+ const pool= mysql2.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
+ }).promise();
+
+ 
 const app = express();
+
+
 
 //define a port number for server to listen on
 const PORT = 3000;
@@ -19,6 +38,17 @@ app.use(express.urlencoded({ extended: true}));
 
 //Set new engine to EJS
 app.set('view engine', 'ejs');
+
+//create testing route for database (if you use await you have to use async)
+app.get('/db-test', async(req,res) => {
+    try{
+        const orders = await pool.query('SELECT * FROM orders');
+        res.send(orders[0]);
+    } catch(err){
+        console.error('Database error: ', err);
+        res.status(500).send('Database error occured.');
+    }
+});
 
 //defining a default route
 app.get('/', (req, res) => {
@@ -43,21 +73,45 @@ app.get('/menu', (req, res) => {
 
 
 //add an admin route
-app.get('/admin', (req, res) => {
-    res.render('admin', {orders} );
+app.get('/admin', async(req, res) => {
+     try{
+        const orders = await pool.query('SELECT * FROM orders');
+        console.log(orders[0]);
+        res.render('admin', {orders:orders[0]} );
+    } catch(err){
+        console.error('Database error: ', err);
+        res.status(500).send('Database error occured.');
+        
+    }
+    
 });
 
 
 //Add a route to process the pizza order => post = recoeving form data
-app.post('/submit-order', (req, res) => {
+app.post('/submit-order', async(req, res) => {
 
     //create a JSON object to store order data
     const order = req.body;
-    order['timestamp'] = new Date();
+    //order['timestamp'] = new Date();
     console.log(order);
-   //add order object to orders array
-   orders.push(order);
-   console.log(orders);
+
+//define a sql query to insert the new order
+const sql = `INSERT INTO orders (fname, lname, email, size, method, toppings, comment)
+VALUES(?, ?, ?, ?, ?, ?, ?)`;
+
+//CREATE AN ARRAY OD PARAMETERS FROM ORDER DATA
+const params =[
+    order.fname,
+    order.lname,
+    order.email,
+    order.size,
+    order.method,
+    order.toppings,
+    order.comment
+];
+
+//execurte query
+const [result] = await pool.execute(sql, params);
 
    //Display confirmation page
    res.render('confirm', { order });
