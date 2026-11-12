@@ -7,7 +7,7 @@ import mysql2 from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config();
 
- //Create a connection pool (bucket of db connectiom)
+ //Create a connection pool (bucket of db connectiom) create a bunch of connections to grab from
  const pool= mysql2.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -39,16 +39,16 @@ app.use(express.urlencoded({ extended: true}));
 //Set new engine to EJS
 app.set('view engine', 'ejs');
 
-//create testing route for database (if you use await you have to use async)
-app.get('/db-test', async(req,res) => {
+//create testing route for database (if you use await you have to use async) --await waits for a response from the db before code is executedd
+/*app.get('/db-test', async(req,res) => {
     try{
-        const orders = await pool.query('SELECT * FROM orders');
-        res.send(orders[0]);
+        const [orders] = await pool.query('SELECT * FROM orders'); //[order] collects rows instead of rows and metadata
+        res.send(orders);
     } catch(err){
         console.error('Database error: ', err);
         res.status(500).send('Database error occured.');
     }
-});
+});*/
 
 //defining a default route
 app.get('/', (req, res) => {
@@ -75,9 +75,9 @@ app.get('/menu', (req, res) => {
 //add an admin route
 app.get('/admin', async(req, res) => {
      try{
-        const orders = await pool.query('SELECT * FROM orders');
-        console.log(orders[0]);
-        res.render('admin', {orders:orders[0]} );
+        const [orders] = await pool.query('SELECT * FROM orders');
+        console.log(orders);
+        res.render('admin', {orders} );
     } catch(err){
         console.error('Database error: ', err);
         res.status(500).send('Database error occured.');
@@ -92,9 +92,12 @@ app.post('/submit-order', async(req, res) => {
 
     //create a JSON object to store order data
     const order = req.body;
-    //order['timestamp'] = new Date();
+    order['timestamp'] = new Date();
     console.log(order);
 
+    //concert toppings array to comma-delimited string
+    order.toppings = Array.isArray(order.toppings)?
+        order.toppings.join(", ") : "";
 //define a sql query to insert the new order
 const sql = `INSERT INTO orders (fname, lname, email, size, method, toppings, comment)
 VALUES(?, ?, ?, ?, ?, ?, ?)`;
@@ -112,6 +115,9 @@ const params =[
 
 //execurte query
 const [result] = await pool.execute(sql, params);
+
+order.id = result.insertId;
+console.log("A new row was inserted with ID " + order.id);
 
    //Display confirmation page
    res.render('confirm', { order });
