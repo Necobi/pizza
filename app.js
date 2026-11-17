@@ -7,6 +7,9 @@ import mysql2 from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config();
 
+//import express-session
+import session from 'express-session';
+
  //Create a connection pool (bucket of db connectiom) create a bunch of connections to grab from
  const pool= mysql2.createPool({
     host: process.env.DB_HOST,
@@ -16,8 +19,24 @@ dotenv.config();
     port: process.env.DB_PORT
  }).promise();
 
- 
+ //initialize express app
 const app = express();
+
+//xreate middleware for a session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitalized: false,
+    cookie: { maxAge: 100 * 60 * 60 } //timed out session
+}));
+//gets sent to the. log in page of logedin 
+function requireLogin(req, res, next){
+    if( req.session.loggedIn){
+        next();
+    } else{
+        res.redirect('/login');
+    }
+};
 
 
 
@@ -61,10 +80,34 @@ app.get('/contact-us', (req, res) => {
     res.render('contact');
 });
 
-//Add a submission route to display a thank you message
-/*app.get('/confirm-order', (req, res) => {
-    res.render('confirm');
-});*/
+
+
+//add a route fpor login page
+app.get('/login', (req, res) => {
+    res.render('login', {error: null});
+});
+
+app.post('/login', (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    if(username === process.env.ADMIN_USER &&
+       password === process.env.ADMIN_PASSWORD) {
+        req.session.loggedIn = true;
+        console.log("I am here");
+        res.redirect('/admin');
+
+       } else{
+        res.render('login', {error: 'Invalid username or password'});
+       }
+    
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
+});
 
 //Add a menu route to display menu
 app.get('/menu', (req, res) => {
@@ -73,7 +116,7 @@ app.get('/menu', (req, res) => {
 
 
 //add an admin route
-app.get('/admin', async(req, res) => {
+app.get('/admin', requireLogin, async(req, res) => {
      try{
         const [orders] = await pool.query('SELECT * FROM orders');
         console.log(orders);
